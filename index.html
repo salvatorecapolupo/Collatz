@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Collatz Explorer - Salvatore Capolupo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f4f7f9; color: #2c3e50; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; text-align: center; }
+        
+        /* Formule Matematiche */
+        .math-box { background: #fff; border: 1px solid #e0e6ed; padding: 20px; border-radius: 10px; margin-bottom: 25px; text-align: center; }
+        
+        /* Input e Usabilità */
+        .controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 2px solid #dfe3e8; border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus { border-color: #1a73e8; }
+        .main-btn { padding: 12px 25px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* Suggerimenti */
+        .suggestions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .suggestions span { font-size: 0.9em; font-weight: bold; color: #637381; }
+        .suggest-btn { padding: 6px 12px; background: #ebf2fe; color: #1a73e8; border: 1px solid #d1e3fa; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .suggest-btn:hover { background: #1a73e8; color: white; }
+
+        /* Output */
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #1a73e8; }
+        #error { color: #d93025; font-size: 14px; margin-top: -10px; margin-bottom: 10px; min-height: 1em; }
+        canvas { margin-top: 20px; }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="card">
+    <h1>Analizzatore di Collatz</h1>
+
+    <div class="math-box">
+        <p>Il sistema calcola la traiettoria di un numero $$n$$ secondo la funzione:</p>
+        <div style="font-size: 1.4em; margin: 15px 0;">
+            $$f(n) = \begin{cases} n/2 & \text{se } n \equiv 0 \pmod{2} \\ 3n+1 & \text{se } n \equiv 1 \pmod{2} \end{cases}$$
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="input-row">
+            <input type="text" id="nInput" placeholder="Inserisci un numero intero positivo...">
+            <button class="main-btn" onclick="calcola()">Analizza</button>
+        </div>
+        <div id="error"></div>
+        
+        <div class="suggestions">
+            <span>Prova numeri curiosi:</span>
+            <button class="suggest-btn" onclick="setN(27)">27 (Il Classico)</button>
+            <button class="suggest-btn" onclick="setN(871)">871 (Lungo)</button>
+            <button class="suggest-btn" onclick="setN(6171)">6171 (Molto Lungo)</button>
+            <button class="suggest-btn" onclick="setN(1024)">1024 (Potenza di 2)</button>
+            <button class="suggest-btn" onclick="setN(31)">31 (2^5-1)</button>
+        </div>
+    </div>
+
+    <div id="result" style="display:none;">
+        <div class="stats">
+            <div>Passaggi: <span id="steps" style="color:#1a73e8">-</span></div>
+            <div>Picco Massimo: <span id="peak" style="color:#1a73e8">-</span></div>
+        </div>
+        <canvas id="collatzChart"></canvas>
+    </div>
+
+    <div class="math-box" style="margin-top:40px; border-left: 4px solid #ff9800; text-align: left;">
+        <strong>Perché alcuni numeri sono "ostici"?</strong>
+        <p>I numeri che richiedono più tempo a scendere sono spesso vicini alle potenze di 2, forzando la sequenza a salire ripetutamente. Una formula generatrice di casi complessi è:</p>
+        <div style="text-align: center; font-size: 1.2em; margin: 10px 0;">
+            $$n_{\text{ostico}}(k) = 2^k - 1$$
+        </div>
+        <p><small>Questi numeri (Mersenne) iniziano con una lunga serie di bit a 1, ritardando la divisione per 2.</small></p>
+    </div>
+
+    <h2>Implementazione in C++ dei numeri di Kollatz</h2>
+
+<pre><code class="language-cpp">
+#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    // Usiamo long long per la robustezza contro numeri grandi
+    long long n;
+    int passaggi = 0;
+
+    cout << "--- COLLATZ EXPLORER ---" << endl;
+    cout << "Inserisci un numero intero positivo: ";
+    
+    // Check di robustezza: l'input e' un numero? E' positivo?
+    if (!(cin >> n) || n <= 0) {
+        cout << "ERRORE: Devi inserire un numero intero maggiore di zero." << endl;
+        return 1; // Termina con codice di errore
+    }
+
+    cout << "Sequenza: " << n;
+
+    while (n != 1) {
+        if (n % 2 == 0) {
+            n = n / 2;
+        } else {
+            n = 3 * n + 1;
+        }
+        cout << " -> " << n;
+        passaggi++;
+    }
+
+    cout << "\n\nAnalisi completata in " << passaggi << " passaggi." << endl;
+
+    return 0;
+}</code></pre>
+
+</div>
+
+<script>
+let myChart = null;
+
+function setN(v) {
+    document.getElementById('nInput').value = v;
+    calcola();
+}
+
+function calcola() {
+    const val = document.getElementById('nInput').value;
+    const err = document.getElementById('error');
+    err.innerText = "";
+
+    let n;
+    try {
+        n = BigInt(val);
+        if (n <= 0n) throw new Error();
+    } catch(e) {
+        err.innerText = "Attenzione: inserisci un intero positivo valido.";
+        return;
+    }
+
+    document.getElementById('result').style.display = "block";
+    const data = [];
+    const labels = [];
+    let current = n;
+    let peak = n;
+    let s = 0;
+
+    data.push(Number(current));
+    labels.push(s);
+
+    while (current !== 1n) {
+        current = (current % 2n === 0n) ? current / 2n : 3n * current + 1n;
+        if (current > peak) peak = current;
+        s++;
+        data.push(Number(current));
+        labels.push(s); 
+        if (s > 15000) break;
+    }
+
+    document.getElementById('steps').innerText = s;
+    document.getElementById('peak').innerText = peak.toString();
+
+    const ctx = document.getElementById('collatzChart').getContext('2d');
+    if (myChart) myChart.destroy();
+    
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Valore di n',
+                data: data,
+                borderColor: '#1a73e8',
+                backgroundColor: 'rgba(26, 115, 232, 0.05)',
+                tension: 0.15,
+                fill: true,
+                pointRadius: data.length > 150 ? 0 : 3,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { 
+                    title: { display: true, text: 'Passo (Iterazione)' },
+                    ticks: { maxTicksLimit: 20 }
+                },
+                y: { 
+                    type: 'logarithmic',
+                    title: { display: true, text: 'Valore di n' }
+                }
+            }
+        }
+    });
+}
+</script>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
